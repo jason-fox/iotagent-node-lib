@@ -15,40 +15,40 @@
  *
  * You should have received a copy of the GNU Affero General Public
  * License along with fiware-iotagent-lib.
- * If not, seehttp://www.gnu.org/licenses/.
+ * If not, see http://www.gnu.org/licenses/.
  *
  * For those usages not covered by the GNU Affero General Public License
  * please contact with::daniel.moranjimenez@telefonica.com
  */
-'use strict';
 
-var iotAgentLib = require('../../../lib/fiware-iotagent-lib'),
-    async = require('async'),
-    should = require('should'),
-    nock = require('nock'),
-    utils = require('../../tools/utils'),
-    iotAgentConfig = {
-        logLevel: 'FATAL',
-        contextBroker: {
-            host: '192.168.1.1',
-            port: '1026'
-        },
-        server: {
-            name: 'testAgent',
-            port: 4041,
-            baseRoot: '/'
-        },
-        types: {},
-        deviceRegistry: {
-            type: 'memory'
-        },
-        service: 'smartGondor',
-        subservice: 'gardens',
-        providerUrl: 'http://smartGondor.com',
-        deviceRegistrationDuration: 'P1M',
-        throttling: 'PT5S'
+/* eslint-disable no-unused-vars */
+
+const iotAgentLib = require('../../../lib/fiware-iotagent-lib');
+const async = require('async');
+const should = require('should');
+const nock = require('nock');
+const utils = require('../../tools/utils');
+const iotAgentConfig = {
+    logLevel: 'FATAL',
+    contextBroker: {
+        host: '192.168.1.1',
+        port: '1026'
     },
-    contextBrokerMock;
+    server: {
+        name: 'testAgent',
+        port: 4041,
+        baseRoot: '/'
+    },
+    types: {},
+    deviceRegistry: {
+        type: 'memory'
+    },
+    service: 'smartGondor',
+    subservice: 'gardens',
+    providerUrl: 'http://smartGondor.com',
+    deviceRegistrationDuration: 'P1M'
+};
+let contextBrokerMock;
 
 describe('In memory device registry', function() {
     beforeEach(function(done) {
@@ -66,13 +66,14 @@ describe('In memory device registry', function() {
                 .times(10)
                 .matchHeader('fiware-service', 'smartGondor')
                 .matchHeader('fiware-servicepath', 'gardens')
-                .reply(200,
-                    utils.readExampleFile(
-                        './test/unit/examples/contextResponses/createProvisionedDeviceSuccess.json'));
+                .reply(
+                    200,
+                    utils.readExampleFile('./test/unit/examples/contextResponses/createProvisionedDeviceSuccess.json')
+                );
 
-            var devices = [];
+            const devices = [];
 
-            for (var i = 0; i < 10; i++) {
+            for (let i = 0; i < 10; i++) {
                 devices.push({
                     id: 'id' + i,
                     type: 'Light' + i,
@@ -97,14 +98,16 @@ describe('In memory device registry', function() {
             iotAgentLib.clearRegistry(done);
         });
         it('should return the appropriate device', function(done) {
-            iotAgentLib.getDevicesByAttribute('internalId', 'internal3', 'smartGondor', 'gardens',
-                function(error, devices) {
-                    should.not.exist(error);
-                    should.exist(devices);
-                    devices.length.should.equal(1);
-                    devices[0].id.should.equal('id3');
-                    done();
-                });
+            iotAgentLib.getDevicesByAttribute('internalId', 'internal3', 'smartGondor', 'gardens', function(
+                error,
+                devices
+            ) {
+                should.not.exist(error);
+                should.exist(devices);
+                devices.length.should.equal(1);
+                devices[0].id.should.equal('id3');
+                done();
+            });
         });
     });
 
@@ -113,18 +116,19 @@ describe('In memory device registry', function() {
             contextBrokerMock = nock('http://192.168.1.1:1026')
                 .post('/v1/updateContext')
                 .times(10)
-                .reply(200,
-                    utils.readExampleFile(
-                        './test/unit/examples/contextResponses/createProvisionedDeviceSuccess.json'));
+                .reply(
+                    200,
+                    utils.readExampleFile('./test/unit/examples/contextResponses/createProvisionedDeviceSuccess.json')
+                );
 
-            var devices = [];
+            const devices = [];
 
-            for (var i = 0; i < 10; i++) {
+            for (let i = 0; i < 10; i++) {
                 devices.push({
                     id: 'id' + i,
-                    type: 'Light' + i % 2,
+                    type: 'Light' + (i % 2),
                     internalId: 'internal' + i,
-                    service: 'smartGondor' + i % 3,
+                    service: 'smartGondor' + (i % 3),
                     subservice: 'gardens',
                     active: [
                         {
@@ -144,13 +148,12 @@ describe('In memory device registry', function() {
             iotAgentLib.clearRegistry(done);
         });
         it('should return all the matching devices', function(done) {
-            iotAgentLib.getDevicesByAttribute('type', 'Light0', undefined, 'gardens',
-                function(error, devices) {
-                    should.not.exist(error);
-                    should.exist(devices);
-                    devices.length.should.equal(5);
-                    done();
-                });
+            iotAgentLib.getDevicesByAttribute('type', 'Light0', undefined, 'gardens', function(error, devices) {
+                should.not.exist(error);
+                should.exist(devices);
+                devices.length.should.equal(5);
+                done();
+            });
         });
     });
 
@@ -159,18 +162,19 @@ describe('In memory device registry', function() {
             contextBrokerMock = nock('http://192.168.1.1:1026')
                 .post('/v1/updateContext')
                 .times(10)
-                .reply(200,
-                    utils.readExampleFile(
-                        './test/unit/examples/contextResponses/createProvisionedDeviceSuccess.json'));
+                .reply(
+                    200,
+                    utils.readExampleFile('./test/unit/examples/contextResponses/createProvisionedDeviceSuccess.json')
+                );
 
-            var devices = [];
+            const devices = [];
 
-            for (var i = 0; i < 10; i++) {
+            for (let i = 0; i < 10; i++) {
                 devices.push({
                     id: 'id' + i,
                     type: 'Light',
                     internalId: 'internal' + i,
-                    service: 'smartGondor' + i % 3,
+                    service: 'smartGondor' + (i % 3),
                     subservice: 'gardens',
                     active: [
                         {
@@ -190,13 +194,12 @@ describe('In memory device registry', function() {
             iotAgentLib.clearRegistry(done);
         });
         it('should return all the matching devices in  that service', function(done) {
-            iotAgentLib.getDevicesByAttribute('type', 'Light', 'smartGondor0', 'gardens',
-                function(error, devices) {
-                    should.not.exist(error);
-                    should.exist(devices);
-                    devices.length.should.equal(4);
-                    done();
-                });
+            iotAgentLib.getDevicesByAttribute('type', 'Light', 'smartGondor0', 'gardens', function(error, devices) {
+                should.not.exist(error);
+                should.exist(devices);
+                devices.length.should.equal(4);
+                done();
+            });
         });
     });
 });

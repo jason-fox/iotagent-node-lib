@@ -15,180 +15,186 @@
  *
  * You should have received a copy of the GNU Affero General Public
  * License along with fiware-iotagent-lib.
- * If not, seehttp://www.gnu.org/licenses/.
+ * If not, see http://www.gnu.org/licenses/.
  *
  * For those usages not covered by the GNU Affero General Public License
  * please contact with::[contacto@tid.es]
  *
  * Modified by: Daniel Calvo - ATOS Research & Innovation
  */
-'use strict';
 
-/* jshint camelcase: false */
+/* eslint-disable no-useless-concat */
 
-var iotAgentLib = require('../../../../lib/fiware-iotagent-lib'),
-    utils = require('../../../tools/utils'),
-    should = require('should'),
-    logger = require('logops'),
-    nock = require('nock'),
-    moment = require('moment'),
-    contextBrokerMock,
-    iotAgentConfig = {
-        contextBroker: {
-            host: '192.168.1.1',
-            port: '1026',
-            ngsiVersion: 'v2'
+const iotAgentLib = require('../../../../lib/fiware-iotagent-lib');
+const utils = require('../../../tools/utils');
+const should = require('should');
+const logger = require('logops');
+const nock = require('nock');
+const moment = require('moment');
+const timekeeper = require('timekeeper');
+let contextBrokerMock;
+const iotAgentConfig = {
+    contextBroker: {
+        host: '192.168.1.1',
+        port: '1026',
+        ngsiVersion: 'v2'
+    },
+    server: {
+        port: 4041
+    },
+    types: {
+        WeatherStation: {
+            commands: [],
+            type: 'WeatherStation',
+            lazy: [],
+            active: [
+                {
+                    object_id: 'p',
+                    name: 'pressure',
+                    type: 'Hgmm'
+                },
+                {
+                    object_id: 'h',
+                    name: 'humidity',
+                    type: 'Percentage',
+                    entity_name: 'Higro2000',
+                    entity_type: 'Higrometer'
+                }
+            ]
         },
-        server: {
-            port: 4041
+        WeatherStation2: {
+            commands: [],
+            type: 'WeatherStation',
+            lazy: [],
+            active: [
+                {
+                    object_id: 'p',
+                    name: 'pressure',
+                    type: 'Hgmm'
+                },
+                {
+                    object_id: 'h',
+                    name: 'humidity',
+                    type: 'Percentage',
+                    entity_name: 'Higro2000'
+                }
+            ]
         },
-        types: {
-            'WeatherStation': {
-                commands: [],
-                type: 'WeatherStation',
-                lazy: [],
-                active: [
-                    {
-                        object_id: 'p',
-                        name: 'pressure',
-                        type: 'Hgmm'
-                    },
-                    {
-                        object_id: 'h',
-                        name: 'humidity',
-                        type: 'Percentage',
-                        entity_name: 'Higro2000',
-                        entity_type: 'Higrometer'
-                    }
-                ]
-            },
-            'WeatherStation2': {
-                commands: [],
-                type: 'WeatherStation',
-                lazy: [],
-                active: [
-                    {
-                        object_id: 'p',
-                        name: 'pressure',
-                        type: 'Hgmm'
-                    },
-                    {
-                        object_id: 'h',
-                        name: 'humidity',
-                        type: 'Percentage',
-                        entity_name: 'Higro2000',
-                    }
-                ]
-            },
-            'WeatherStation3': {
-                commands: [],
-                type: 'WeatherStation',
-                lazy: [],
-                active: [
-                    {
-                        object_id: 'p',
-                        name: 'pressure',
-                        type: 'Hgmm'
-                    },
-                    {
-                        object_id: 'h',
-                        name: 'humidity',
-                        type: 'Percentage',
-                        entity_name: 'Station Number ${@sn * 10}',
-                    }
-                ]
-            },
-            'WeatherStation5': {
-                commands: [],
-                type: 'WeatherStation',
-                lazy: [],
-                active: [
-                    {
-                        object_id: 'p',
-                        name: 'pressure',
-                        type: 'Hgmm'
-                    },
-                    {
-                        object_id: 'h',
-                        name: 'pressure',
-                        type: 'Hgmm',
-                        entity_name: 'Higro2000',
-                        entity_type: 'Higrometer'
-                    }
-                ]
-            },
-            'WeatherStation6': {
-                commands: [],
-                type: 'WeatherStation',
-                lazy: [],
-                active: [
-                    {
-                        object_id: 'p',
-                        name: 'pressure',
-                        type: 'Hgmm',
-                        entity_name: 'Higro2002',
-                        entity_type: 'Higrometer'
-                    },
-                    {
-                        object_id: 'h',
-                        name: 'pressure',
-                        type: 'Hgmm',
-                        entity_name: 'Higro2000',
-                        entity_type: 'Higrometer'
-                    }
-                ]
-            },
-            'Sensor001': {
-                commands: [],
-                type: 'Sensor',
-                lazy: [],
-                active: [
-                    {
-                        type : 'number',
-                        name : 'vol',
-                        object_id : 'cont1',
-                        entity_name : 'SO1',
-                        entity_type : 'WM'
-                    },
-                    {
-                        type : 'number',
-                        name : 'vol',
-                        object_id : 'cont2',
-                        entity_name : 'SO2',
-                        entity_type : 'WM'
-                    },
-                    {
-                        type : 'number',
-                        name : 'vol',
-                        object_id : 'cont3',
-                        entity_name : 'SO3',
-                        entity_type : 'WM'
-                    },
-                    {
-                        type : 'number',
-                        name : 'vol',
-                        object_id : 'cont4',
-                        entity_name : 'SO4',
-                        entity_type : 'WM'
-                    },
-                    {
-                        type : 'number',
-                        name : 'vol',
-                        object_id : 'cont5',
-                        entity_name : 'SO5',
-                        entity_type : 'WM'
-                    }
-                ]
-
-            },
-
+        WeatherStation3: {
+            commands: [],
+            type: 'WeatherStation',
+            lazy: [],
+            active: [
+                {
+                    object_id: 'p',
+                    name: 'pressure',
+                    type: 'Hgmm'
+                },
+                {
+                    object_id: 'h',
+                    name: 'humidity',
+                    type: 'Percentage',
+                    entity_name: 'Station Number ${@sn * 10}'
+                }
+            ]
         },
-        service: 'smartGondor',
-        subservice: 'gardens',
-        providerUrl: 'http://smartGondor.com',
-        deviceRegistrationDuration: 'P1M',
-        throttling: 'PT5S'
-    };
+        WeatherStation5: {
+            commands: [],
+            type: 'WeatherStation',
+            lazy: [],
+            active: [
+                {
+                    object_id: 'p',
+                    name: 'pressure',
+                    type: 'Hgmm'
+                },
+                {
+                    object_id: 'h',
+                    name: 'pressure',
+                    type: 'Hgmm',
+                    entity_name: 'Higro2000',
+                    entity_type: 'Higrometer'
+                }
+            ]
+        },
+        WeatherStation6: {
+            commands: [],
+            type: 'WeatherStation',
+            lazy: [],
+            active: [
+                {
+                    object_id: 'p',
+                    name: 'pressure',
+                    type: 'Hgmm',
+                    entity_name: 'Higro2002',
+                    entity_type: 'Higrometer'
+                },
+                {
+                    object_id: 'h',
+                    name: 'pressure',
+                    type: 'Hgmm',
+                    entity_name: 'Higro2000',
+                    entity_type: 'Higrometer'
+                }
+            ]
+        },
+        Sensor001: {
+            commands: [],
+            type: 'Sensor',
+            lazy: [],
+            active: [
+                {
+                    type: 'number',
+                    name: 'vol',
+                    object_id: 'cont1',
+                    entity_name: 'SO1',
+                    entity_type: 'WM'
+                },
+                {
+                    type: 'number',
+                    name: 'vol',
+                    object_id: 'cont2',
+                    entity_name: 'SO2',
+                    entity_type: 'WM'
+                },
+                {
+                    type: 'number',
+                    name: 'vol',
+                    object_id: 'cont3',
+                    entity_name: 'SO3',
+                    entity_type: 'WM'
+                },
+                {
+                    type: 'number',
+                    name: 'vol',
+                    object_id: 'cont4',
+                    entity_name: 'SO4',
+                    entity_type: 'WM'
+                },
+                {
+                    type: 'number',
+                    name: 'vol',
+                    object_id: 'cont5',
+                    entity_name: 'SO5',
+                    entity_type: 'WM'
+                }
+            ]
+        },
+        SensorCommand: {
+            commands: [
+                {
+                    name: 'PING',
+                    type: 'command'
+                }
+            ],
+            type: 'SensorCommand',
+            lazy: []
+        }
+    },
+    service: 'smartGondor',
+    subservice: 'gardens',
+    providerUrl: 'http://smartGondor.com'
+};
 
 describe('Multi-entity plugin', function() {
     beforeEach(function(done) {
@@ -211,7 +217,7 @@ describe('Multi-entity plugin', function() {
     });
 
     describe('When an update comes for a multientity measurement', function() {
-        var values = [
+        const values = [
             {
                 name: 'p',
                 type: 'centigrades',
@@ -230,8 +236,12 @@ describe('Multi-entity plugin', function() {
             contextBrokerMock = nock('http://192.168.1.1:1026')
                 .matchHeader('fiware-service', 'smartGondor')
                 .matchHeader('fiware-servicepath', 'gardens')
-                .post('/v2/op/update', utils.readExampleFile(
-                    './test/unit/ngsiv2/examples/contextRequests/updateContextMultientityPlugin1.json'))
+                .post(
+                    '/v2/op/update',
+                    utils.readExampleFile(
+                        './test/unit/ngsiv2/examples/contextRequests/updateContextMultientityPlugin1.json'
+                    )
+                )
                 .reply(204);
         });
 
@@ -245,7 +255,7 @@ describe('Multi-entity plugin', function() {
     });
 
     describe('When an update comes for a multientity measurement with same attribute name', function() {
-        var values = [
+        const values = [
             {
                 name: 'h',
                 type: 'Hgmm',
@@ -259,8 +269,12 @@ describe('Multi-entity plugin', function() {
             contextBrokerMock = nock('http://192.168.1.1:1026')
                 .matchHeader('fiware-service', 'smartGondor')
                 .matchHeader('fiware-servicepath', 'gardens')
-                .post('/v2/op/update', utils.readExampleFile(
-                    './test/unit/ngsiv2/examples/contextRequests/updateContextMultientityPlugin4.json'))
+                .post(
+                    '/v2/op/update',
+                    utils.readExampleFile(
+                        './test/unit/ngsiv2/examples/contextRequests/updateContextMultientityPlugin4.json'
+                    )
+                )
                 .reply(204);
         });
 
@@ -274,7 +288,7 @@ describe('Multi-entity plugin', function() {
     });
 
     describe('When an update comes for a multientity multi measurement with same attribute name', function() {
-        var values = [
+        const values = [
             {
                 name: 'h',
                 type: 'Hgmm',
@@ -293,8 +307,12 @@ describe('Multi-entity plugin', function() {
             contextBrokerMock = nock('http://192.168.1.1:1026')
                 .matchHeader('fiware-service', 'smartGondor')
                 .matchHeader('fiware-servicepath', 'gardens')
-                .post('/v2/op/update', utils.readExampleFile(
-                    './test/unit/ngsiv2/examples/contextRequests/updateContextMultientityPlugin5.json'))
+                .post(
+                    '/v2/op/update',
+                    utils.readExampleFile(
+                        './test/unit/ngsiv2/examples/contextRequests/updateContextMultientityPlugin5.json'
+                    )
+                )
                 .reply(204);
         });
 
@@ -307,9 +325,8 @@ describe('Multi-entity plugin', function() {
         });
     });
 
-
     describe('When an update comes for a multientity defined with an expression', function() {
-        var values = [
+        const values = [
             {
                 name: 'p',
                 type: 'centigrades',
@@ -333,8 +350,12 @@ describe('Multi-entity plugin', function() {
             contextBrokerMock = nock('http://192.168.1.1:1026')
                 .matchHeader('fiware-service', 'smartGondor')
                 .matchHeader('fiware-servicepath', 'gardens')
-                .post('/v2/op/update', utils.readExampleFile(
-                    './test/unit/ngsiv2/examples/contextRequests/updateContextMultientityPlugin3.json'))
+                .post(
+                    '/v2/op/update',
+                    utils.readExampleFile(
+                        './test/unit/ngsiv2/examples/contextRequests/updateContextMultientityPlugin3.json'
+                    )
+                )
                 .reply(204);
         });
 
@@ -348,7 +369,7 @@ describe('Multi-entity plugin', function() {
     });
 
     describe('When an update comes for a multientity measurement without type for one entity', function() {
-        var values = [
+        const values = [
             {
                 name: 'p',
                 type: 'centigrades',
@@ -367,8 +388,12 @@ describe('Multi-entity plugin', function() {
             contextBrokerMock = nock('http://192.168.1.1:1026')
                 .matchHeader('fiware-service', 'smartGondor')
                 .matchHeader('fiware-servicepath', 'gardens')
-                .post('/v2/op/update', utils.readExampleFile(
-                    './test/unit/ngsiv2/examples/contextRequests/updateContextMultientityPlugin2.json'))
+                .post(
+                    '/v2/op/update',
+                    utils.readExampleFile(
+                        './test/unit/ngsiv2/examples/contextRequests/updateContextMultientityPlugin2.json'
+                    )
+                )
                 .reply(204);
         });
 
@@ -381,81 +406,94 @@ describe('Multi-entity plugin', function() {
         });
     });
 
-    describe('When an update comes for a multientity measurement and there are attributes with' +
-        ' the same name but different alias and mapped to different CB entities', function() {
-        var values = [
-            {
-                name: 'cont1',
-                type: 'number',
-                value: '38'
-            }
-        ];
+    describe(
+        'When an update comes for a multientity measurement and there are attributes with' +
+            ' the same name but different alias and mapped to different CB entities',
+        function() {
+            const values = [
+                {
+                    name: 'cont1',
+                    type: 'number',
+                    value: '38'
+                }
+            ];
 
-        beforeEach(function() {
-            nock.cleanAll();
+            beforeEach(function() {
+                nock.cleanAll();
 
-            contextBrokerMock = nock('http://192.168.1.1:1026')
-                .matchHeader('fiware-service', 'smartGondor')
-                .matchHeader('fiware-servicepath', 'gardens')
-                .post('/v2/op/update', utils.readExampleFile(
-                    './test/unit/ngsiv2/examples/contextRequests/updateContextMultientityPlugin6.json'))
-                .reply(204);
-        });
-
-        it('should update only the appropriate CB entity', function(done) {
-            iotAgentLib.update('Sensor', 'Sensor001', '', values, function(error) {
-                should.not.exist(error);
-                contextBrokerMock.done();
-                done();
+                contextBrokerMock = nock('http://192.168.1.1:1026')
+                    .matchHeader('fiware-service', 'smartGondor')
+                    .matchHeader('fiware-servicepath', 'gardens')
+                    .post(
+                        '/v2/op/update',
+                        utils.readExampleFile(
+                            './test/unit/ngsiv2/examples/contextRequests/updateContextMultientityPlugin6.json'
+                        )
+                    )
+                    .reply(204);
             });
-        });
-    });
-    
-    describe('When an update comes for a multientity multi measurement and there are attributes with' +
-        ' the same name but different alias and mapped to different CB entities', function() {
-        var values = [
-            {
-                name: 'cont1',
-                type: 'number',
-                value: '38'
-            },
-            {
-                name: 'cont2',
-                type: 'number',
-                value: '39'
-            },
-            {
-                name: 'cont3',
-                type: 'number',
-                value: '40'
-            },
-            {
-                name: 'cont5',
-                type: 'number',
-                value: '42'
-            }                        
-        ];
 
-        beforeEach(function() {
-            nock.cleanAll();
-
-            contextBrokerMock = nock('http://192.168.1.1:1026')
-                .matchHeader('fiware-service', 'smartGondor')
-                .matchHeader('fiware-servicepath', 'gardens')
-                .post('/v2/op/update', utils.readExampleFile(
-                    './test/unit/ngsiv2/examples/contextRequests/updateContextMultientityPlugin7.json'))
-                .reply(204);
-        });
-
-        it('should update only the appropriate CB entity', function(done) {
-            iotAgentLib.update('Sensor', 'Sensor001', '', values, function(error) {
-                should.not.exist(error);
-                contextBrokerMock.done();
-                done();
+            it('should update only the appropriate CB entity', function(done) {
+                iotAgentLib.update('Sensor', 'Sensor001', '', values, function(error) {
+                    should.not.exist(error);
+                    contextBrokerMock.done();
+                    done();
+                });
             });
-        });
-   });
-    
+        }
+    );
+
+    describe(
+        'When an update comes for a multientity multi measurement and there are attributes with' +
+            ' the same name but different alias and mapped to different CB entities',
+        function() {
+            const values = [
+                {
+                    name: 'cont1',
+                    type: 'number',
+                    value: '38'
+                },
+                {
+                    name: 'cont2',
+                    type: 'number',
+                    value: '39'
+                },
+                {
+                    name: 'cont3',
+                    type: 'number',
+                    value: '40'
+                },
+                {
+                    name: 'cont5',
+                    type: 'number',
+                    value: '42'
+                }
+            ];
+
+            beforeEach(function() {
+                nock.cleanAll();
+
+                contextBrokerMock = nock('http://192.168.1.1:1026')
+                    .matchHeader('fiware-service', 'smartGondor')
+                    .matchHeader('fiware-servicepath', 'gardens')
+                    .post(
+                        '/v2/op/update',
+                        utils.readExampleFile(
+                            './test/unit/ngsiv2/examples/contextRequests/updateContextMultientityPlugin7.json'
+                        )
+                    )
+                    .reply(204);
+            });
+
+            it('should update only the appropriate CB entity', function(done) {
+                iotAgentLib.update('Sensor', 'Sensor001', '', values, function(error) {
+                    should.not.exist(error);
+                    contextBrokerMock.done();
+                    done();
+                });
+            });
+        }
+    );
 });
 
 describe('Multi-entity plugin is executed before timestamp process plugin', function() {
@@ -481,7 +519,7 @@ describe('Multi-entity plugin is executed before timestamp process plugin', func
     });
 
     describe('When an update comes for a multientity measurement and timestamp is enabled in config file', function() {
-        var values = [
+        const values = [
             {
                 name: 'p',
                 type: 'centigrades',
@@ -499,7 +537,7 @@ describe('Multi-entity plugin is executed before timestamp process plugin', func
             }
         ];
 
-        var singleValue = [
+        const singleValue = [
             {
                 name: 'h',
                 type: 'Percentage',
@@ -512,36 +550,32 @@ describe('Multi-entity plugin is executed before timestamp process plugin', func
         });
 
         it('should send two context elements, one for each entity', function(done) {
-
             contextBrokerMock = nock('http://192.168.1.1:1026')
                 .matchHeader('fiware-service', 'smartGondor')
                 .matchHeader('fiware-servicepath', 'gardens')
                 .post('/v2/op/update', function(body) {
-                    var expectedBody = utils.readExampleFile('./test/unit/ngsiv2/examples' +
-                        '/contextRequests/updateContextMultientityTimestampPlugin1.json');
+                    const expectedBody = utils.readExampleFile(
+                        './test/unit/ngsiv2/examples/contextRequests/updateContextMultientityTimestampPlugin1.json'
+                    );
                     // Note that TimeInstant fields are not included in the json used by this mock as they are dynamic
                     // fields. The following code just checks that TimeInstant fields are present.
-                    if (!body.entities[1].TimeInstant || !body.entities[1].humidity.metadata.TimeInstant)
-                    {
+                    if (!body.entities[1].TimeInstant || !body.entities[1].humidity.metadata.TimeInstant) {
                         return false;
                     }
-                    else {
-                        var timeInstantEntity = body.entities[1].TimeInstant;
-                        var timeInstantAtt = body.entities[1].humidity.metadata.TimeInstant;
-                        if (moment(timeInstantEntity, 'YYYY-MM-DDTHH:mm:ss.SSSZ').isValid &&
-                            moment(timeInstantAtt, 'YYYY-MM-DDTHH:mm:ss.SSSZ').isValid) {
+                    const timeInstantEntity = body.entities[1].TimeInstant;
+                    const timeInstantAtt = body.entities[1].humidity.metadata.TimeInstant;
+                    if (
+                        moment(timeInstantEntity, 'YYYY-MM-DDTHH:mm:ss.SSSZ').isValid &&
+                        moment(timeInstantAtt, 'YYYY-MM-DDTHH:mm:ss.SSSZ').isValid
+                    ) {
+                        delete body.entities[1].TimeInstant;
+                        delete body.entities[1].humidity.metadata.TimeInstant;
 
-                            delete body.entities[1].TimeInstant;
-                            delete body.entities[1].humidity.metadata.TimeInstant;
-
-                            delete expectedBody.entities[1].TimeInstant;
-                            delete expectedBody.entities[1].humidity.metadata.TimeInstant;
-                            return JSON.stringify(body) === JSON.stringify(expectedBody);
-
-                        } else {
-                            return false;
-                        }
+                        delete expectedBody.entities[1].TimeInstant;
+                        delete expectedBody.entities[1].humidity.metadata.TimeInstant;
+                        return JSON.stringify(body) === JSON.stringify(expectedBody);
                     }
+                    return false;
                 })
                 .reply(204);
 
@@ -557,32 +591,28 @@ describe('Multi-entity plugin is executed before timestamp process plugin', func
                 .matchHeader('fiware-service', 'smartGondor')
                 .matchHeader('fiware-servicepath', 'gardens')
                 .post('/v2/op/update', function(body) {
-                    var expectedBody = utils.readExampleFile('./test/unit/ngsiv2/examples' +
-                        '/contextRequests/updateContextMultientityTimestampPlugin2.json');
+                    const expectedBody = utils.readExampleFile(
+                        './test/unit/ngsiv2/examples/contextRequests/updateContextMultientityTimestampPlugin2.json'
+                    );
                     // Note that TimeInstant fields are not included in the json used by this mock as they are dynamic
                     // fields. The following code just checks that TimeInstant fields are present.
-                    if (!body.entities[1].TimeInstant ||
-                        !body.entities[1].humidity.metadata.TimeInstant)
-                    {
+                    if (!body.entities[1].TimeInstant || !body.entities[1].humidity.metadata.TimeInstant) {
                         return false;
                     }
-                    else {
-                        var timeInstantEntity2 = body.entities[1].TimeInstant;
-                        var timeInstantAtt = body.entities[1].humidity.metadata.TimeInstant;
-                        if (moment(timeInstantEntity2, 'YYYY-MM-DDTHH:mm:ss.SSSZ').isValid &&
-                            moment(timeInstantAtt, 'YYYY-MM-DDTHH:mm:ss.SSSZ').isValid) {
+                    const timeInstantEntity2 = body.entities[1].TimeInstant;
+                    const timeInstantAtt = body.entities[1].humidity.metadata.TimeInstant;
+                    if (
+                        moment(timeInstantEntity2, 'YYYY-MM-DDTHH:mm:ss.SSSZ').isValid &&
+                        moment(timeInstantAtt, 'YYYY-MM-DDTHH:mm:ss.SSSZ').isValid
+                    ) {
+                        delete body.entities[1].TimeInstant;
+                        delete body.entities[1].humidity.metadata.TimeInstant;
 
-                            delete body.entities[1].TimeInstant;
-                            delete body.entities[1].humidity.metadata.TimeInstant;
-
-                            delete expectedBody.entities[1].TimeInstant;
-                            delete expectedBody.entities[1].humidity.metadata.TimeInstant;
-                            return JSON.stringify(body) === JSON.stringify(expectedBody);
-
-                        } else {
-                            return false;
-                        }
+                        delete expectedBody.entities[1].TimeInstant;
+                        delete expectedBody.entities[1].humidity.metadata.TimeInstant;
+                        return JSON.stringify(body) === JSON.stringify(expectedBody);
                     }
+                    return false;
                 })
                 .reply(204);
 
@@ -597,11 +627,15 @@ describe('Multi-entity plugin is executed before timestamp process plugin', func
             contextBrokerMock = nock('http://192.168.1.1:1026')
                 .matchHeader('fiware-service', 'smartGondor')
                 .matchHeader('fiware-servicepath', 'gardens')
-                .post('/v2/op/update', utils.readExampleFile('./test/unit/ngsiv2/examples' +
-                        '/contextRequests/updateContextMultientityTimestampPlugin3.json'))
+                .post(
+                    '/v2/op/update',
+                    utils.readExampleFile(
+                        './test/unit/ngsiv2/examples/contextRequests/updateContextMultientityTimestampPlugin3.json'
+                    )
+                )
                 .reply(204);
 
-            var tsValue = [
+            const tsValue = [
                 {
                     name: 'h',
                     type: 'Percentage',
@@ -624,3 +658,59 @@ describe('Multi-entity plugin is executed before timestamp process plugin', func
     });
 });
 
+describe('Multi-entity plugin is executed for a command update for a regular entity ', function() {
+    beforeEach(function(done) {
+        logger.setLevel('FATAL');
+
+        iotAgentConfig.timestamp = true;
+        const time = new Date(1438760101468); // 2015-08-05T07:35:01.468+00:00
+        timekeeper.freeze(time);
+        iotAgentLib.activate(iotAgentConfig, function() {
+            iotAgentLib.clearAll(function() {
+                iotAgentLib.addUpdateMiddleware(iotAgentLib.dataPlugins.attributeAlias.update);
+                iotAgentLib.addQueryMiddleware(iotAgentLib.dataPlugins.attributeAlias.query);
+                iotAgentLib.addUpdateMiddleware(iotAgentLib.dataPlugins.multiEntity.update);
+                iotAgentLib.addUpdateMiddleware(iotAgentLib.dataPlugins.timestampProcess.update);
+                done();
+            });
+        });
+    });
+
+    afterEach(function(done) {
+        timekeeper.reset();
+        iotAgentLib.clearAll(function() {
+            iotAgentLib.deactivate(done);
+        });
+    });
+
+    it('Should send the update to the context broker', function(done) {
+        contextBrokerMock = nock('http://192.168.1.1:1026')
+            .matchHeader('fiware-service', 'smartGondor')
+            .matchHeader('fiware-servicepath', 'gardens')
+            .post(
+                '/v2/op/update',
+                utils.readExampleFile(
+                    './test/unit/ngsiv2/examples/contextRequests/updateContextMultientityTimestampPlugin4.json'
+                )
+            )
+            .reply(204);
+        const commands = [
+            {
+                name: 'PING_status',
+                type: 'commandStatus',
+                value: 'OK'
+            },
+            {
+                name: 'PING_info',
+                type: 'commandResult',
+                value: '1234567890'
+            }
+        ];
+
+        iotAgentLib.update('sensorCommand', 'SensorCommand', '', commands, function(error) {
+            should.not.exist(error);
+            contextBrokerMock.done();
+            done();
+        });
+    });
+});

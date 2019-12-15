@@ -15,99 +15,94 @@
  *
  * You should have received a copy of the GNU Affero General Public
  * License along with fiware-iotagent-lib.
- * If not, seehttp://www.gnu.org/licenses/.
+ * If not, see http://www.gnu.org/licenses/.
  *
  * For those usages not covered by the GNU Affero General Public License
  * please contact with::[contacto@tid.es]
  *
  * Modified by: Daniel Calvo - ATOS Research & Innovation
  */
-'use strict';
 
-/* jshint camelcase: false */
-
-var iotAgentLib = require('../../../../lib/fiware-iotagent-lib'),
-    utils = require('../../../tools/utils'),
-    should = require('should'),
-    logger = require('logops'),
-    nock = require('nock'),
-    contextBrokerMock,
-    iotAgentConfig = {
-        autocast: true,
-        contextBroker: {
-            host: '192.168.1.1',
-            port: '1026',
-            ngsiVersion: 'v2'
-        },
-        server: {
-            port: 4041
-        },
-        types: {
-            'Light': {
-                commands: [],
-                type: 'Light',
-                lazy: [
-                    {
-                        object_id: 't',
-                        name: 'temperature',
-                        type: 'centigrades'
-                    }
-                ],
-                active: [
-                    {
-                        object_id: 'p',
-                        name: 'pressure',
-                        type: 'Hgmm'
-                    },
-                    {
-                        object_id: 'l',
-                        name: 'luminance',
-                        type: 'lumens'
-                    },
-                    {
-                        object_id: 'ut',
-                        name: 'unix_timestamp',
-                        type: 'Number'
-                    },
-                    {
-                        object_id: 'ap',
-                        name: 'active_power',
-                        type: 'Number'
-                    },
-                    {
-                        object_id: 'ap',
-                        name: 'active_power',
-                        type: 'Number'
-                    },
-                    {
-                        object_id: 's',
-                        name: 'status',
-                        type: 'Boolean'
-                    },
-                    {
-                        object_id: 'al',
-                        name: 'keep_alive',
-                        type: 'None'
-                    },
-                    {
-                        object_id: 'ta',
-                        name: 'tags',
-                        type: 'Array'
-                    },
-                    {
-                        object_id: 'c',
-                        name: 'configuration',
-                        type: 'Object'
-                    }
-                ]
-            }
-        },
-        service: 'smartGondor',
-        subservice: 'gardens',
-        providerUrl: 'http://smartGondor.com',
-        deviceRegistrationDuration: 'P1M',
-        throttling: 'PT5S'
-    };
+const iotAgentLib = require('../../../../lib/fiware-iotagent-lib');
+const utils = require('../../../tools/utils');
+const should = require('should');
+const logger = require('logops');
+const nock = require('nock');
+let contextBrokerMock;
+const iotAgentConfig = {
+    autocast: true,
+    contextBroker: {
+        host: '192.168.1.1',
+        port: '1026',
+        ngsiVersion: 'v2'
+    },
+    server: {
+        port: 4041
+    },
+    types: {
+        Light: {
+            commands: [],
+            type: 'Light',
+            lazy: [
+                {
+                    object_id: 't',
+                    name: 'temperature',
+                    type: 'centigrades'
+                }
+            ],
+            active: [
+                {
+                    object_id: 'p',
+                    name: 'pressure',
+                    type: 'Hgmm'
+                },
+                {
+                    object_id: 'l',
+                    name: 'luminance',
+                    type: 'lumens'
+                },
+                {
+                    object_id: 'ut',
+                    name: 'unix_timestamp',
+                    type: 'Number'
+                },
+                {
+                    object_id: 'ap',
+                    name: 'active_power',
+                    type: 'Number'
+                },
+                {
+                    object_id: 'ap',
+                    name: 'active_power',
+                    type: 'Number'
+                },
+                {
+                    object_id: 's',
+                    name: 'status',
+                    type: 'Boolean'
+                },
+                {
+                    object_id: 'al',
+                    name: 'keep_alive',
+                    type: 'None'
+                },
+                {
+                    object_id: 'ta',
+                    name: 'tags',
+                    type: 'Array'
+                },
+                {
+                    object_id: 'c',
+                    name: 'configuration',
+                    type: 'Object'
+                }
+            ]
+        }
+    },
+    service: 'smartGondor',
+    subservice: 'gardens',
+    providerUrl: 'http://smartGondor.com'
+};
 
 describe('Attribute alias plugin', function() {
     beforeEach(function(done) {
@@ -128,7 +123,7 @@ describe('Attribute alias plugin', function() {
         });
     });
     describe('When an update comes for attributes with aliases', function() {
-        var values = [
+        const values = [
             {
                 name: 't',
                 type: 'centigrades',
@@ -147,14 +142,15 @@ describe('Attribute alias plugin', function() {
             contextBrokerMock = nock('http://192.168.1.1:1026')
                 .matchHeader('fiware-service', 'smartGondor')
                 .matchHeader('fiware-servicepath', 'gardens')
-                .post('/v2/entities/light1/attrs', utils.readExampleFile(
-                    './test/unit/ngsiv2/examples/contextRequests/updateContextAliasPlugin1.json'))
-                .query({type: 'Light'})
+                .post(
+                    '/v2/entities/light1/attrs',
+                    utils.readExampleFile('./test/unit/ngsiv2/examples/contextRequests/updateContextAliasPlugin1.json')
+                )
+                .query({ type: 'Light' })
                 .reply(204);
         });
 
-        it('should rename the attributes as expected by the alias mappings' +
-            'and cast values to JSON native types', function(done) {
+        it('should rename the attributes as expected by the alias mappings and cast values to JSON native types', function(done) {
             iotAgentLib.update('light1', 'Light', '', values, function(error) {
                 should.not.exist(error);
                 contextBrokerMock.done();
@@ -163,7 +159,7 @@ describe('Attribute alias plugin', function() {
         });
     });
     describe('When an update comes for attributes with aliases and a different type', function() {
-        var values = [
+        const values = [
             {
                 name: 'l',
                 type: 'lums',
@@ -177,14 +173,15 @@ describe('Attribute alias plugin', function() {
             contextBrokerMock = nock('http://192.168.1.1:1026')
                 .matchHeader('fiware-service', 'smartGondor')
                 .matchHeader('fiware-servicepath', 'gardens')
-                .post('/v2/entities/light1/attrs', utils.readExampleFile(
-                    './test/unit/ngsiv2/examples/contextRequests/updateContextAliasPlugin2.json'))
-                .query({type: 'Light'})
+                .post(
+                    '/v2/entities/light1/attrs',
+                    utils.readExampleFile('./test/unit/ngsiv2/examples/contextRequests/updateContextAliasPlugin2.json')
+                )
+                .query({ type: 'Light' })
                 .reply(204);
         });
 
-        it('should rename the attributes as expected by the alias mappings' +
-            'and cast values to JSON native types', function(done) {
+        it('should rename the attributes as expected by the alias mappings and cast values to JSON native types', function(done) {
             iotAgentLib.update('light1', 'Light', '', values, function(error) {
                 should.not.exist(error);
                 contextBrokerMock.done();
@@ -193,7 +190,7 @@ describe('Attribute alias plugin', function() {
         });
     });
     describe('When an update comes for attributes with aliases and integer type', function() {
-        var values = [
+        const values = [
             {
                 name: 'ut',
                 type: 'Number',
@@ -207,9 +204,11 @@ describe('Attribute alias plugin', function() {
             contextBrokerMock = nock('http://192.168.1.1:1026')
                 .matchHeader('fiware-service', 'smartGondor')
                 .matchHeader('fiware-servicepath', 'gardens')
-                .post('/v2/entities/light1/attrs', utils.readExampleFile(
-                    './test/unit/ngsiv2/examples/contextRequests/updateContextAliasPlugin3.json'))
-                .query({type: 'Light'})
+                .post(
+                    '/v2/entities/light1/attrs',
+                    utils.readExampleFile('./test/unit/ngsiv2/examples/contextRequests/updateContextAliasPlugin3.json')
+                )
+                .query({ type: 'Light' })
                 .reply(204);
         });
 
@@ -223,7 +222,7 @@ describe('Attribute alias plugin', function() {
     });
 
     describe('When an update comes for attributes with aliases and integer type.', function() {
-        var values = [
+        const values = [
             {
                 name: 'ut',
                 type: 'Number',
@@ -237,14 +236,15 @@ describe('Attribute alias plugin', function() {
             contextBrokerMock = nock('http://192.168.1.1:1026')
                 .matchHeader('fiware-service', 'smartGondor')
                 .matchHeader('fiware-servicepath', 'gardens')
-                .post('/v2/entities/light1/attrs', utils.readExampleFile(
-                    './test/unit/ngsiv2/examples/contextRequests/updateContextAliasPlugin3.json'))
-                .query({type: 'Light'})
+                .post(
+                    '/v2/entities/light1/attrs',
+                    utils.readExampleFile('./test/unit/ngsiv2/examples/contextRequests/updateContextAliasPlugin3.json')
+                )
+                .query({ type: 'Light' })
                 .reply(204);
         });
 
-        it('should rename the attributes as expected by the alias mappings' +
-            'and cast values to JSON native types', function(done) {
+        it('should rename the attributes as expected by the alias mappings and cast values to JSON native types', function(done) {
             iotAgentLib.update('light1', 'Light', '', values, function(error) {
                 should.not.exist(error);
                 contextBrokerMock.done();
@@ -254,7 +254,7 @@ describe('Attribute alias plugin', function() {
     });
 
     describe('When an update comes for attributes with aliases and float type', function() {
-        var values = [
+        const values = [
             {
                 name: 'ap',
                 type: 'Number',
@@ -268,14 +268,15 @@ describe('Attribute alias plugin', function() {
             contextBrokerMock = nock('http://192.168.1.1:1026')
                 .matchHeader('fiware-service', 'smartGondor')
                 .matchHeader('fiware-servicepath', 'gardens')
-                .post('/v2/entities/light1/attrs', utils.readExampleFile(
-                    './test/unit/ngsiv2/examples/contextRequests/updateContextAliasPlugin4.json'))
-                .query({type: 'Light'})
+                .post(
+                    '/v2/entities/light1/attrs',
+                    utils.readExampleFile('./test/unit/ngsiv2/examples/contextRequests/updateContextAliasPlugin4.json')
+                )
+                .query({ type: 'Light' })
                 .reply(204);
         });
 
-        it('should rename the attributes as expected by the alias mappings' +
-            'and cast values to JSON native types', function(done) {
+        it('should rename the attributes as expected by the alias mappings and cast values to JSON native types', function(done) {
             iotAgentLib.update('light1', 'Light', '', values, function(error) {
                 should.not.exist(error);
                 contextBrokerMock.done();
@@ -285,7 +286,7 @@ describe('Attribute alias plugin', function() {
     });
 
     describe('When an update comes for attributes with aliases and boolean type', function() {
-        var values = [
+        const values = [
             {
                 name: 's',
                 type: 'Boolean',
@@ -299,14 +300,15 @@ describe('Attribute alias plugin', function() {
             contextBrokerMock = nock('http://192.168.1.1:1026')
                 .matchHeader('fiware-service', 'smartGondor')
                 .matchHeader('fiware-servicepath', 'gardens')
-                .post('/v2/entities/light1/attrs', utils.readExampleFile(
-                    './test/unit/ngsiv2/examples/contextRequests/updateContextAliasPlugin5.json'))
-                .query({type: 'Light'})
+                .post(
+                    '/v2/entities/light1/attrs',
+                    utils.readExampleFile('./test/unit/ngsiv2/examples/contextRequests/updateContextAliasPlugin5.json')
+                )
+                .query({ type: 'Light' })
                 .reply(204);
         });
 
-        it('should rename the attributes as expected by the alias mappings' +
-            'and cast values to JSON native types', function(done) {
+        it('should rename the attributes as expected by the alias mappings and cast values to JSON native types', function(done) {
             iotAgentLib.update('light1', 'Light', '', values, function(error) {
                 should.not.exist(error);
                 contextBrokerMock.done();
@@ -316,7 +318,7 @@ describe('Attribute alias plugin', function() {
     });
 
     describe('When an update comes for attributes with aliases and None type', function() {
-        var values = [
+        const values = [
             {
                 name: 'al',
                 type: 'None',
@@ -330,14 +332,15 @@ describe('Attribute alias plugin', function() {
             contextBrokerMock = nock('http://192.168.1.1:1026')
                 .matchHeader('fiware-service', 'smartGondor')
                 .matchHeader('fiware-servicepath', 'gardens')
-                .post('/v2/entities/light1/attrs', utils.readExampleFile(
-                    './test/unit/ngsiv2/examples/contextRequests/updateContextAliasPlugin6.json'))
-                .query({type: 'Light'})
+                .post(
+                    '/v2/entities/light1/attrs',
+                    utils.readExampleFile('./test/unit/ngsiv2/examples/contextRequests/updateContextAliasPlugin6.json')
+                )
+                .query({ type: 'Light' })
                 .reply(204);
         });
 
-        it('should rename the attributes as expected by the alias mappings' +
-            'and cast values to JSON native types', function(done) {
+        it('should rename the attributes as expected by the alias mappings and cast values to JSON native types', function(done) {
             iotAgentLib.update('light1', 'Light', '', values, function(error) {
                 should.not.exist(error);
                 contextBrokerMock.done();
@@ -347,7 +350,7 @@ describe('Attribute alias plugin', function() {
     });
 
     describe('When an update comes for attributes with aliases and Array type', function() {
-        var values = [
+        const values = [
             {
                 name: 'ta',
                 type: 'Array',
@@ -361,14 +364,15 @@ describe('Attribute alias plugin', function() {
             contextBrokerMock = nock('http://192.168.1.1:1026')
                 .matchHeader('fiware-service', 'smartGondor')
                 .matchHeader('fiware-servicepath', 'gardens')
-                .post('/v2/entities/light1/attrs', utils.readExampleFile(
-                    './test/unit/ngsiv2/examples/contextRequests/updateContextAliasPlugin7.json'))
-                .query({type: 'Light'})
+                .post(
+                    '/v2/entities/light1/attrs',
+                    utils.readExampleFile('./test/unit/ngsiv2/examples/contextRequests/updateContextAliasPlugin7.json')
+                )
+                .query({ type: 'Light' })
                 .reply(204);
         });
 
-        it('should rename the attributes as expected by the alias mappings' +
-            'and cast values to JSON native types', function(done) {
+        it('should rename the attributes as expected by the alias mappings and cast values to JSON native types', function(done) {
             iotAgentLib.update('light1', 'Light', '', values, function(error) {
                 should.not.exist(error);
                 contextBrokerMock.done();
@@ -378,7 +382,7 @@ describe('Attribute alias plugin', function() {
     });
 
     describe('When an update comes for attributes with aliases and Object type', function() {
-        var values = [
+        const values = [
             {
                 name: 'c',
                 type: 'Object',
@@ -392,14 +396,15 @@ describe('Attribute alias plugin', function() {
             contextBrokerMock = nock('http://192.168.1.1:1026')
                 .matchHeader('fiware-service', 'smartGondor')
                 .matchHeader('fiware-servicepath', 'gardens')
-                .post('/v2/entities/light1/attrs', utils.readExampleFile(
-                    './test/unit/ngsiv2/examples/contextRequests/updateContextAliasPlugin8.json'))
-                .query({type: 'Light'})
+                .post(
+                    '/v2/entities/light1/attrs',
+                    utils.readExampleFile('./test/unit/ngsiv2/examples/contextRequests/updateContextAliasPlugin8.json')
+                )
+                .query({ type: 'Light' })
                 .reply(204);
         });
 
-        it('should rename the attributes as expected by the alias mappings' +
-            'and cast values to JSON native types', function(done) {
+        it('should rename the attributes as expected by the alias mappings and cast values to JSON native types', function(done) {
             iotAgentLib.update('light1', 'Light', '', values, function(error) {
                 should.not.exist(error);
                 contextBrokerMock.done();
@@ -408,9 +413,8 @@ describe('Attribute alias plugin', function() {
         });
     });
 
-
     describe('When an update comes for attributes with aliases and Object type, but value is String', function() {
-        var values = [
+        const values = [
             {
                 name: 'c',
                 type: 'Object',
@@ -424,14 +428,15 @@ describe('Attribute alias plugin', function() {
             contextBrokerMock = nock('http://192.168.1.1:1026')
                 .matchHeader('fiware-service', 'smartGondor')
                 .matchHeader('fiware-servicepath', 'gardens')
-                .post('/v2/entities/light1/attrs', utils.readExampleFile(
-                    './test/unit/ngsiv2/examples/contextRequests/updateContextAliasPlugin9.json'))
-                .query({type: 'Light'})
+                .post(
+                    '/v2/entities/light1/attrs',
+                    utils.readExampleFile('./test/unit/ngsiv2/examples/contextRequests/updateContextAliasPlugin9.json')
+                )
+                .query({ type: 'Light' })
                 .reply(204);
         });
 
-        it('should rename the attributes as expected by the alias mappings' +
-            'and cast values to JSON native types', function(done) {
+        it('should rename the attributes as expected by the alias mappings and cast values to JSON native types', function(done) {
             iotAgentLib.update('light1', 'Light', '', values, function(error) {
                 should.not.exist(error);
                 contextBrokerMock.done();
