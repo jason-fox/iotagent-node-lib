@@ -881,45 +881,42 @@ describe('Java expression language (JEXL) based transformations plugin', functio
         });
     });
 
-    describe(
-        'When there are expressions including other attributes and they are updated' + '(overriding situation)',
-        function() {
-            const values = [
-                {
-                    name: 'x',
-                    type: 'Number',
-                    value: 0.44
-                },
-                {
-                    name: 'p',
-                    type: 'Number',
-                    value: 10
-                }
-            ];
+    describe('When there are expressions including other attributes and they are updated (overriding situation)', function() {
+        const values = [
+            {
+                name: 'x',
+                type: 'Number',
+                value: 0.44
+            },
+            {
+                name: 'p',
+                type: 'Number',
+                value: 10
+            }
+        ];
 
-            beforeEach(function() {
-                nock.cleanAll();
+        beforeEach(function() {
+            nock.cleanAll();
 
-                contextBrokerMock = nock('http://192.168.1.1:1026')
-                    .matchHeader('fiware-service', 'smartGondor')
-                    .matchHeader('fiware-servicepath', 'gardens')
-                    .post(
-                        '/v2/entities/light1/attrs',
-                        utils.readExampleFile(
-                            './test/unit/ngsiv2/examples/contextRequests/updateContextExpressionPlugin13.json'
-                        )
+            contextBrokerMock = nock('http://192.168.1.1:1026')
+                .matchHeader('fiware-service', 'smartGondor')
+                .matchHeader('fiware-servicepath', 'gardens')
+                .post(
+                    '/v2/entities/light1/attrs',
+                    utils.readExampleFile(
+                        './test/unit/ngsiv2/examples/contextRequests/updateContextExpressionPlugin13.json'
                     )
-                    .query({ type: 'Light' })
-                    .reply(204);
-            });
+                )
+                .query({ type: 'Light' })
+                .reply(204);
+        });
 
-            it('should apply the expression before sending the values', function(done) {
-                iotAgentLib.update('light1', 'Light', '', values, function(error) {
-                    should.not.exist(error);
-                    contextBrokerMock.done();
-                    done();
-                });
+        it('should apply the expression before sending the values', function(done) {
+            iotAgentLib.update('light1', 'Light', '', values, function(error) {
+                should.not.exist(error);
+                contextBrokerMock.done();
+                done();
             });
-        }
-    );
+        });
+    });
 });
