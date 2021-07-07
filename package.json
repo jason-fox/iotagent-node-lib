@@ -44,10 +44,12 @@
     "watch": "watch 'npm test && npm run lint' ./lib ./test"
   },
   "dependencies": {
+    "@cloudnative/health": "^2.1.2",
     "async": "2.6.2",
     "body-parser": "~1.19.0",
     "command-shell-lib": "1.0.0",
     "express": "~4.16.4",
+    "install": "^0.13.0",
     "jexl": "2.1.1",
     "jison": "0.4.18",
     "logops": "2.1.0",
@@ -56,6 +58,7 @@
     "mongodb": "3.6.8",
     "mongoose": "5.7.7",
     "mu2": "~0.5.20",
+    "npm": "^7.19.1",
     "query-string": "6.5.0",
     "request": "2.88.0",
     "revalidator": "~0.3.1",
